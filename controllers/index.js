@@ -4,19 +4,21 @@ dotenv.config();
 
 async function sendMail(mail) {
     const transporter = await nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "negativegame117@gmail.com",
-        pass: process.env.PASS,
-      },
+        host: 'smtp.gmail.com',
+        port: 587,
+        service: "gmail",
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.PASS,
+        },
     });
   
     const info = await transporter.sendMail({
-      from: "negativegame117@gmail.com", // sender address
-      to: "negativegame117@gmail.com", // list of receivers
-      subject: "Este es un mensajito de prueba", // Subject line
-      text: mail, // plain text body
-      html: mail, // html body
+      from: process.env.EMAIL, // sender address
+      to: mail.senderEmail, // list of receivers
+      subject: mail.subject, // Subject line
+      text: mail.msg, // plain text body
+      html: `<p>${mail.msg}</p>`, // html body
     });
   
     console.log("Message sent: %s", info.messageId);
@@ -24,9 +26,9 @@ async function sendMail(mail) {
   }
 
 export async function routeSendEmail (req, res) {
-    const { msg } = req.body
+    const { msg, senderEmail, subject } = req.body
     try {
-        const newEmail = await sendMail(msg)
+        const newEmail = await sendMail({msg, senderEmail, subject})
 
         if (!newEmail) {
             throw new Error("No se ha podido enviar el email!")
